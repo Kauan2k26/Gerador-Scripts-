@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lua Script Generator PRO</title>
+<title>Gerador Scripts</title>
 
 <style>
 body{
@@ -14,7 +14,7 @@ body{
 }
 
 .container{
-    max-width:500px;
+    max-width:600px;
     margin:auto;
     padding:20px;
 }
@@ -24,7 +24,7 @@ h1{
     color:#00ffcc;
 }
 
-input,select,textarea{
+input,textarea{
     width:100%;
     margin:5px 0;
     padding:8px;
@@ -43,31 +43,42 @@ button{
 }
 
 .generate{ background:#00ffcc; }
+.add{ background:#4444ff; }
 .copy{ background:#ffaa00; }
 .download{ background:#00aa44; }
 
 textarea{
-    height:200px;
+    height:250px;
     background:#1a1a1a;
     color:#00ffcc;
+}
+
+.functionBox{
+    background:#1a1a1a;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    position:relative;
+}
+
+.removeBtn{
+    background:#ff4444;
+    margin-top:5px;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Lua Script Generator PRO</h1>
+<h1>Lua Script Generator ULTRA</h1>
 
 <input type="text" id="scriptName" placeholder="Nome do Script">
 <input type="text" id="author" placeholder="Autor">
 
-<select id="type">
-<option value="base">Base Vazia</option>
-<option value="menu">Menu Simples</option>
-<option value="loop">Loop Infinito</option>
-<option value="function">Estrutura com Função</option>
-</select>
+<h3>Funções:</h3>
+<div id="functions"></div>
 
+<button class="add" onclick="addFunction()">Adicionar Função</button>
 <button class="generate" onclick="generate()">Gerar Script</button>
 <button class="copy" onclick="copyScript()">Copiar</button>
 <button class="download" onclick="downloadScript()">Baixar .lua</button>
@@ -77,11 +88,29 @@ textarea{
 </div>
 
 <script>
+
+function addFunction(){
+
+let div = document.createElement("div");
+div.className = "functionBox";
+
+div.innerHTML = `
+<input type="text" placeholder="Nome da Função" class="functionName">
+<textarea placeholder="Código interno da função (opcional)"></textarea>
+<button class="removeBtn" onclick="removeFunction(this)">Remover Função</button>
+`;
+
+document.getElementById("functions").appendChild(div);
+}
+
+function removeFunction(button){
+button.parentElement.remove();
+}
+
 function generate(){
 
 let name = document.getElementById("scriptName").value || "Meu Script";
 let author = document.getElementById("author").value || "Desconhecido";
-let type = document.getElementById("type").value;
 
 let script = `-- ${name}
 -- Autor: ${author}
@@ -89,55 +118,29 @@ let script = `-- ${name}
 
 `;
 
-if(type === "base"){
-script += `
-print("Script iniciado com sucesso!")
+let names = document.querySelectorAll(".functionName");
+let codes = document.querySelectorAll(".functionBox textarea");
 
--- Seu código começa aqui
+for(let i=0;i<names.length;i++){
+
+let funcName = names[i].value || "funcao" + (i+1);
+let internalCode = codes[i].value || `    print("Executando ${funcName}")`;
+
+script += `
+function ${funcName}()
+${internalCode}
+end
+
 `;
 }
 
-if(type === "menu"){
 script += `
-menu = true
-
-while menu do
-    print("1 - Opção A")
-    print("2 - Opção B")
-    print("0 - Sair")
-
-    local escolha = io.read()
-
-    if escolha == "1" then
-        print("Você escolheu A")
-    elseif escolha == "2" then
-        print("Você escolheu B")
-    elseif escolha == "0" then
-        menu = false
-    else
-        print("Opção inválida")
-    end
-end
+-- Executando funções automaticamente
 `;
-}
 
-if(type === "loop"){
-script += `
-while true do
-    print("Loop rodando...")
-    os.execute("sleep 1")
-end
-`;
-}
-
-if(type === "function"){
-script += `
-function minhaFuncao()
-    print("Função executada!")
-end
-
-minhaFuncao()
-`;
+for(let i=0;i<names.length;i++){
+let funcName = names[i].value || "funcao" + (i+1);
+script += `${funcName}()\n`;
 }
 
 document.getElementById("output").value = script;
@@ -158,6 +161,7 @@ a.href = URL.createObjectURL(blob);
 a.download = "script.lua";
 a.click();
 }
+
 </script>
 
 </body>
