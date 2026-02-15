@@ -14,7 +14,6 @@ body{
     overflow-x:hidden;
 }
 
-/* Texto gigante no fundo */
 .background-text{
     position:fixed;
     top:50%;
@@ -26,10 +25,8 @@ body{
     z-index:0;
     pointer-events:none;
     user-select:none;
-    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
 }
 
-/* Container principal */
 .container{
     max-width:800px;
     margin:auto;
@@ -41,33 +38,14 @@ body{
 h1{
     text-align:center;
     color:#00ffcc;
-    margin-bottom:5px;
 }
 
-/* Texto piscando Criador */
 .creator{
     text-align:center;
     font-weight:bold;
     margin-bottom:20px;
-    animation: blink 1s infinite alternate;
 }
 
-@keyframes blink{
-    0%{
-        color:#00ffcc;
-        text-shadow:0 0 5px #00ffcc,
-                    0 0 10px #00ffcc,
-                    0 0 20px #00ffcc;
-        opacity:1;
-    }
-    100%{
-        color:#006666;
-        text-shadow:none;
-        opacity:0.4;
-    }
-}
-
-/* Cards do gerador */
 .card{
     background:#1a1a1a;
     padding:15px;
@@ -80,8 +58,7 @@ h1{
     color:#00ffcc;
 }
 
-/* Inputs e textarea */
-input,textarea{
+input,textarea,select{
     width:100%;
     padding:8px;
     border-radius:8px;
@@ -96,7 +73,6 @@ textarea{
     resize:vertical;
 }
 
-/* Botões */
 .buttons{
     display:flex;
     gap:10px;
@@ -117,7 +93,6 @@ button{
 .copy{ background:#ffaa00; }
 .download{ background:#00aa44; }
 
-/* Box de funções */
 .functionBox{
     background:#222;
     padding:10px;
@@ -126,7 +101,6 @@ button{
     position:relative;
 }
 
-/* Botão remover função */
 .removeBtn{
     position:absolute;
     top:8px;
@@ -139,7 +113,6 @@ button{
     cursor:pointer;
 }
 
-/* Output */
 #output{
     height:250px;
     background:#111;
@@ -149,7 +122,6 @@ button{
 </head>
 <body>
 
-<!-- Texto gigante no fundo -->
 <div class="background-text">KAUAN MODS</div>
 
 <div class="container">
@@ -192,7 +164,18 @@ function addFunction(){
 
     div.innerHTML = `
     <button class="removeBtn" onclick="removeFunction(this)">X</button>
+
     <input type="text" placeholder="Nome da função" class="functionName">
+
+    <select class="category">
+        <option>PLAYER</option>
+        <option>FARM</option>
+        <option>TELETRANSPORTE</option>
+        <option>ARMAS</option>
+        <option>VEICULO</option>
+        <option>GRAFICO</option>
+    </select>
+
     <textarea placeholder="Código interno da função"></textarea>
     `;
 
@@ -213,28 +196,30 @@ function generate(){
 
 `;
 
-    let names = document.querySelectorAll(".functionName");
-    let codes = document.querySelectorAll(".functionBox textarea");
+    let boxes = document.querySelectorAll(".functionBox");
+    let categorias = {};
 
-    for(let i=0;i<names.length;i++){
-        let funcName = names[i].value || "funcao" + (i+1);
-        let internalCode = codes[i].value || `    print("Executando ${funcName}")`;
+    boxes.forEach((box, index) => {
+        let funcName = box.querySelector(".functionName").value || "funcao" + (index+1);
+        let category = box.querySelector(".category").value;
+        let internalCode = box.querySelector("textarea").value || `    print("Executando ${funcName}")`;
 
-        script += `
+        if(!categorias[category]){
+            categorias[category] = [];
+        }
+
+        categorias[category].push(`
 function ${funcName}()
 ${internalCode}
 end
+`);
+    });
 
-`;
-    }
-
-    script += `
--- Execução automática
-`;
-
-    for(let i=0;i<names.length;i++){
-        let funcName = names[i].value || "funcao" + (i+1);
-        script += `${funcName}()\n`;
+    for(let cat in categorias){
+        script += `\n-- ${cat}\n`;
+        categorias[cat].forEach(func => {
+            script += func + "\n";
+        });
     }
 
     document.getElementById("output").value = script;
